@@ -1,0 +1,90 @@
+\documentclass[]{article}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+%opening
+\title{Efficient Generation of Maximin Designs}
+\author{Nathan Wycoff}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document seeks to solve the following optimization problem:
+
+\begin{align*}
+	\max_{\mathbf{X} \in \mathbb{R}^{N\times P}} \min_{1 \leq i < j \leq N} ||\mathbf{x}_i - \mathbf{x}_j||_2 \\ 
+	\textrm{S.T.}\\
+	\mathbf{X}_{i,j} \in [0,1]
+\end{align*}
+
+Where $\mathbf{x}_i$ represents row $i$ of $\mathbf{X}$. In applications, $\mathbf{X}$ represents an experimental design which we would like to be space filling in the sense defined above.
+
+\section{A Formulation as a Mathematical Program}
+
+We can formulate the above as a quadratically constrained linear program using some tricks from the OR community. Begin by defining $\mathbf{x} = \textrm{vec}\{\mathbf{X}\}$. The $\ell_2$ distance between two points is a quadratic form:
+
+\begin{equation}
+	\textrm{dist}[\mathbf{x}_i, \mathbf{x}_j] = \mathbf{x}^\top\mathbf{D}_{i,j}\mathbf{x}
+\end{equation}
+
+Where:
+
+\begin{equation}
+	\mathbf{D}_{i,j} = \left[\begin{array}{ccccccc}
+		\mathbf{0} & \ldots & \ldots & \ldots & \ldots & \ldots &\mathbf{0} \\
+		\vdots & \ddots & \ldots & \ldots & \ldots & \ldots & \vdots \\
+		\vdots & \ldots & \mathbf{I} & \ldots & -\mathbf{I}  & \ldots & \vdots \\
+		\vdots & \ldots & \ldots & \ddots & \ldots & \ldots & \vdots \\
+		\vdots & \ldots & -\mathbf{I}  & \ldots & \mathbf{I} & \ldots & \vdots \\
+		\vdots & \ldots & \ldots & \ldots & \ldots & \ddots & \vdots \\
+		\mathbf{0} & \ldots & \ldots & \ldots & \ldots & \ldots & \mathbf{0} 
+	\end{array}	\right]
+\end{equation}
+
+all elements aside from the $\mathbf{I} \in \mathbb{R}^{P\times P}$ identities (located in the block $i,j$ position) are zero in the matrix. This matrix has eigenvalue $2$ $P$ many times, and $0$ for its remaining eigenvalues. As such, the matrix is symmetric positive semi-definite.
+
+With this matrix in hand, we can formulate the problem, defining a slack variable $t$:
+
+\begin{align*}
+	\min_{t, \mathbf{x}} t\\
+	\textrm{S.T.}\\
+	t \leq \mathbf{x}'\mathbf{D}_{i,j}\mathbf{x} \hspace{1em} \forall 1 \leq j < i \leq N\\
+	t,x_i \in [0,1]
+\end{align*}
+
+This is a quadratically constrained linear program. However, two issues mean that it is not a friendly optimization. 
+
+The most important issue is the fact that the quadratic form appears on the LHS of the constraint. This makes it negative semi-definite when placed in canonical form. A quadratic program is only convex if its quadratic forms are \textit{positive} semi-definite in canonical form. Most quadratic solvers assume a convex problem, so I'm using a general nonlinear solver at present. I would need to consult OR researchers to determine if there is a smarter option.
+
+The second is the quadratic growth of the number of constraints, making this a difficult problem for larger designs. It will be imperitive to take advantage of the sparsity inherent in the problem, though efficient sparsity-exploiting general nonlinear optimization is somewhat lacking (in my experience) in R.
+
+\section{Numerical Experiments}
+
+As a first step, we will compare the performance of the proposed method versus that provided by the \texttt{minimax} R package. We will fix the spatial dimension to $2$, and vary $N \in \{5, 15, \ldots, 35\}$. The maximum number of iterations for the minimax method is fixed to $10N$. To optimize the new method, we use the Sequential Quadratic Programming function provided by NLopt through the \texttt{nloptr} package. Both methods are initialized uniformly at random 30 times  for a fair comparison (though as a nonconvex problem, smart initialization is critical to good solutions; perhaps one based off a simpler space-filling method could be considered?).
+
+The results are given in Figure \ref{playground}. The new method seems promising for smaller designs, but the quadratic increase in effort is evident.
+
+\begin{figure}[h]
+	\includegraphics[scale=0.5]{../images/playground.pdf}
+	\label{playground}
+	\caption{A comparison of effectiveness and efficiency of the two methods. In each, the left boxplot corresponds to the old method, and the right to the new one. Each boxplot represents 30 trials.}
+\end{figure}
+
+\section{Still To Do:}
+
+\begin{enumerate}
+	\item Use a sparsity-exploiting solver.
+	\item Along with my present implementation of a general nonlinear formulation, I should consider using the Augmented Lagrangian, as each subproblem would be a box constrained quadratic program.
+	\item The quadratic scaling of my method may be mitigated by combining techniques with Furong/Bobby's maximin package. In particular, I can formulate their subproblem as an LP with a linearly scaling number of constraints. This combined method is likely to dominate both in larger designs.
+	\item Considering other distances is potentially interesting. For instance, the $\ell_1$ distance would give either a linear program or a sequence of linear programs.
+	\item Semi-Definite relaxation of the problem together with application of new second-order cone methods may be of interest (I will need to progress further into my optimization class to be able to do this).
+\end{enumerate}
+
+
+
+\end{document}

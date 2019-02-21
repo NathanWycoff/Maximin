@@ -1,0 +1,11 @@
+*.swp
+*.swo
+*.RData
+
+*.aux
+*.log
+*.gz
+*.pdf
+
+images/*
+data/*
