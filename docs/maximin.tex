@@ -51,7 +51,7 @@ all elements aside from the $\mathbf{I} \in \mathbb{R}^{P\times P}$ identities (
 With this matrix in hand, we can formulate the problem, defining a slack variable $t$:
 
 \begin{align*}
-	\min_{t, \mathbf{x}} t\\
+	\max_{t, \mathbf{x}} t\\
 	\textrm{S.T.}\\
 	t \leq \mathbf{x}'\mathbf{D}_{i,j}\mathbf{x} \hspace{1em} \forall 1 \leq j < i \leq N\\
 	t,x_i \in [0,1]
@@ -61,7 +61,7 @@ This is a quadratically constrained linear program. However, two issues mean tha
 
 The most important issue is the fact that the quadratic form appears on the LHS of the constraint. This makes it negative semi-definite when placed in canonical form. A quadratic program is only convex if its quadratic forms are \textit{positive} semi-definite in canonical form. Most quadratic solvers assume a convex problem, so I'm using a general nonlinear solver at present. I would need to consult OR researchers to determine if there is a smarter option.
 
-The second is the quadratic growth of the number of constraints, making this a difficult problem for larger designs. It will be imperitive to take advantage of the sparsity inherent in the problem, though efficient sparsity-exploiting general nonlinear optimization is somewhat lacking (in my experience) in R.
+The second is the quadratic growth of the number of constraints, making this a difficult problem for larger designs. It will be imperative to take advantage of the sparsity inherent in the problem, though efficient sparsity-exploiting general nonlinear optimization is somewhat lacking (in my experience) in R.
 
 \section{Numerical Experiments}
 

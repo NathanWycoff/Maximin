@@ -3,7 +3,7 @@
 library(nloptr)
 library(maximin)
 
-Ns <- seq(5,35,by=10)
+Ns <- seq(5,55,by=10)
 P <- 2
 iters <- 30
 
@@ -87,7 +87,7 @@ for (N_i in 1:length(Ns)) {
             return(RET)
         }
 
-        fb_time <- system.time(fb_obj <- min(maximin(N, P, 10*N)$mi))[3]
+        fb_time <- system.time(fb_obj <- max(maximin(N, P, 10*N)$mi))[3]
 
         my_time <- system.time(my_obj <- -slsqp(x0 = c(runif(N*P), 0), fn = objective, gr = gradient, 
               hin = hin, hinjac = hinjac,
