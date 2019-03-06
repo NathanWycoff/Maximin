@@ -1,0 +1,3 @@
+Using RCP to optimize the objective directly.
+
+The PHI criterion: Can it be phrased elegantly?
