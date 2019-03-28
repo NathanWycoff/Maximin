@@ -3,7 +3,8 @@
 library(nloptr)
 library(maximin)
 
-Ns <- seq(5,55,by=10)
+set.seed(123)
+Ns <- seq(5,15,by=10)
 P <- 2
 iters <- 30
 
@@ -111,4 +112,4 @@ time_res$N <- as.numeric(time_res$N)
 obj_res$obj <- as.numeric(obj_res$obj)
 obj_res$N <- as.numeric(obj_res$N)
 
-save(time_res, obj_res, file = 'data/cool_sim_results.RData')
+#save(time_res, obj_res, file = 'data/cool_sim_results.RData')

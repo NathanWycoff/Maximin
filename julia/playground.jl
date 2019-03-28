@@ -1,8 +1,9 @@
 using JuMP
-using Ipopt
+using Gurobi
 
 # Define domain
-N = 5;
+N = 100;
+M = 10;#precision of estimate
 P = 2;
 
 # Define distance matrices
@@ -24,17 +25,30 @@ for n1 = 1:(N-1)
 end
 
 # Set up optimization problem.
-maximin = Model(solver=IpoptSolver())
+maximin = Model(solver=GurobiSolver())
 
-@variable(maximin, 0 <= x[i=1:(N*P)] <= 1);
+@variable(maximin, 0 <= x[n=1:(N*P)] <= 1);
+@variable(maximin, b[n=1:(N*P),1:M], Bin);
 @variable(maximin, t >= 0);
 
 @objective(maximin, Max, t);
 
+#for n1 = 1:(N-1)
+#    for n2 = (n1+1):N
+#        @constraint(maximin, t <= x'*D[n1][n2-n1]*x)
+#    end
+#end
+
 for n1 = 1:(N-1)
     for n2 = (n1+1):N
-        @constraint(maximin, t <= x'*D[n1][n2-n1]*x)
+        @constraint(maximin, t <= sum(0.5^m * b[n1,m] for m=1:M)^2 - 2 * sum(0.5^m * b[n1,m] for m=1:M) *sum(0.5^m * b[n2,m] for m=1:M) + sum(0.5^m * b[n2,m] for m=1:M)^2)
     end
 end
 
+for i = 1:(N*P)
+    @constraint(maximin, sum(0.5^m * b[i,m] for m=1:M) == x[i]) 
+end
+
 solve(maximin)
+getvalue(x)
+getvalue(t)

@@ -59,7 +59,7 @@ With this matrix in hand, we can formulate the problem, defining a slack variabl
 
 This is a quadratically constrained linear program. However, two issues mean that it is not a friendly optimization. 
 
-The most important issue is the fact that the quadratic form appears on the LHS of the constraint. This makes it negative semi-definite when placed in canonical form. A quadratic program is only convex if its quadratic forms are \textit{positive} semi-definite in canonical form. Most quadratic solvers assume a convex problem, so I'm using a general nonlinear solver at present. I would need to consult OR researchers to determine if there is a smarter option.
+The most important issue is the fact that the quadratic form appears on the LHS of the constraint. This makes it negative semi-definite when placed in canonical form. A quadratic program is only convex if its quadratic forms are \textit{positive} semi-definite in canonical form. Most quadratic solvers assume a convex problem, so I'm using a general nonlinear solver at present. I would need to consult OR researchers to determine if there is a smarter option. EDIT: it would appear that this problem falls under the realm of ``reverse quadratic programming".
 
 The second is the quadratic growth of the number of constraints, making this a difficult problem for larger designs. It will be imperative to take advantage of the sparsity inherent in the problem, though efficient sparsity-exploiting general nonlinear optimization is somewhat lacking (in my experience) in R.
 
